@@ -4,10 +4,6 @@ const checkLogin = (username, password) => {
   return exec(sql).then(rows => {
     return !!rows.length
   })
-  // if (username === 'zhangsan' && password === '123') {
-  //   return true
-  // }
-  // return false
 }
 
 module.exports = {

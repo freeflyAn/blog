@@ -1,5 +1,4 @@
 const { checkLogin } = require('../controller/user');
-const user = require('../controller/user');
 const { SuccessModel, ErrorModel } = require('../model/resModel')
 const handleUSerRouter = (req, res) => {
   const method = req.method;
