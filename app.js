@@ -1,7 +1,7 @@
 const querystring = require('querystring')
+const { set, get} = require('./src/db/redis')
 const handleUserRouter = require('./src/router/user')
 const handleBlogRouter = require('./src/router/blog')
-const { resolve } = require('path')
 const getPostData = req => {
   const promise = new Promise((resolve, reject) => {
     if (req.method !== 'POST') {
@@ -41,6 +41,7 @@ const serverHandle = (req, res) => {
 
   req.query = querystring.parse(url.split('?')[1])
 
+  // cookie
   req.cookie = {}
   const cookieStr = req.headers.cookie || ''
   cookieStr.split(";").forEach(item => {
@@ -51,21 +52,40 @@ const serverHandle = (req, res) => {
     req.cookie[key] = value
   })
 
+  // session
+  // let needSetSession = false
+  // let user_id = req.cookie.user_id
+  // if (user_id) {
+  //   if (!SESSION_DATA[user_id]) {
+  //     SESSION_DATA[user_id] = {}
+  //   }
+  //   needSetSession = false
+  // } else {
+  //   needSetSession = true
+  //   user_id = `${Date.now()}_${Math.random()}`;
+  //   SESSION_DATA[user_id] = {}
+  // }
+  // req.session = SESSION_DATA[user_id]
+
+  // redis 
   let needSetSession = false
   let user_id = req.cookie.user_id
-  if (user_id) {
-    if (!SESSION_DATA[user_id]) {
-      SESSION_DATA[user_id] = {}
-    }
-    needSetSession = false
-  } else {
+
+  if (!user_id) {
     needSetSession = true
     user_id = `${Date.now()}_${Math.random()}`;
-    SESSION_DATA[user_id] = {}
+    set(user_id, {})
   }
-  req.session = SESSION_DATA[user_id]
-
-  getPostData(req).then(postData => {
+  req.sessionId = user_id
+  get(req.sessionId).then(result => {
+    if (!result) {
+      set(user_id, {})
+      req.session = {}
+    } else {
+      req.session = result
+    }
+    return getPostData(req)
+  }).then(postData => {
     req.body = postData;
     
     const blogResult = handleBlogRouter(req, res);
