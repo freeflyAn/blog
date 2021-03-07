@@ -49,7 +49,7 @@ const serverHandle = (req, res) => {
     const arr = item.split('=')
     const key = arr[0],
           value = arr[1];
-    req.cookie[key] = value
+    req.cookie[key.trim()] = value.trim()
   })
 
   // session
@@ -70,7 +70,6 @@ const serverHandle = (req, res) => {
   // redis 
   let needSetSession = false
   let user_id = req.cookie.user_id
-
   if (!user_id) {
     needSetSession = true
     user_id = `${Date.now()}_${Math.random()}`;
