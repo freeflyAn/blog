@@ -5,11 +5,13 @@ const handleUSerRouter = (req, res) => {
 
 
   // 登录
-  if ( method === 'POST' && req.path === '/api/user/login') {
-    const { username, password } = req.body;
+  if ( method === 'GET' && req.path === '/api/user/login') {
+    const { username, password } = req.query;
     return login(username, password).then(result => {
       if (result) {
-        return new SuccessModel()
+        req.session.username = username
+        req.session.realname = result.realname
+        return new SuccessModel(req.session)
       } else {
         return new ErrorModel('登陆失败')
       }
@@ -17,7 +19,7 @@ const handleUSerRouter = (req, res) => {
   }
   if (method === 'GET' && req.path === '/api/user/login-test') {
     return Promise.resolve(
-      req.cookie.username ? new SuccessModel() : new ErrorModel('登陆失败')
+      req.session.username ? new SuccessModel(req.session) : new ErrorModel('登陆失败')
     )
   }
 }
